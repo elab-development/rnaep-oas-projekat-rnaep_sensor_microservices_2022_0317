@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # ===== BAZE =====
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # ===== MIKROSERVISI =====
+  sensor-service:
+    build: ./sensor-service
+    container_name: sensor-service
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      MONGODB_URI: mongodb://mongodb:27017/sensor_db
+      IRRIGATION_SERVICE_URL: http://irrigation-service:3002
+      ALERT_SERVICE_URL: http://alert-service:3003
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
+  irrigation-service:
+    build: ./irrigation-service
+    container_name: irrigation-service
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: irrigation_db
+      SENSOR_SERVICE_URL: http://sensor-service:3001
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  alert-service:
+    build: ./alert-service
+    container_name: alert-service
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: alert_db
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  # ===== API GATEWAY =====
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      SENSOR_SERVICE_URL: http://sensor-service:3001
+      IRRIGATION_SERVICE_URL: http://irrigation-service:3002
+      ALERT_SERVICE_URL: http://alert-service:3003
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sensor-service
+      - irrigation-service
+      - alert-service
+    networks:
+      - app-network
+
+  # ===== UI =====
+  ui:
+    build: ./ui
+    container_name: ui
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - app-network
+
+  # ===== SIMULATOR =====
+  simulator:
+    build: ./simulator
+    container_name: simulator
+    restart: unless-stopped
+    environment:
+      API_GATEWAY_URL: http://api-gateway:8080
+      SENSOR_ID: SENSOR_01
+      ZONE_ID: ZONE_1
+      INTERVAL_MS: 15000
+      SIMULATOR_PORT: 3005
+    ports:
+      - "3005:3005"
+    depends_on:
+      - api-gateway
+    networks:
+      - app-network
+
+# ===== NETWORKS I VOLUMES =====
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  postgres_data:
