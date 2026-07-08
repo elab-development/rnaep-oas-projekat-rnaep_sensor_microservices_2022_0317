@@ -20,4 +20,7 @@ router.post('/check', irrigationController.checkRules);
 router.post('/manual/on', irrigationController.manualIrrigation);
 router.post('/manual/off', irrigationController.manualIrrigationOff);
 
+// Vremenska prognoza za zonu
+router.get('/weather/:zone_id', irrigationController.getWeatherForecast);
+
 module.exports = router;

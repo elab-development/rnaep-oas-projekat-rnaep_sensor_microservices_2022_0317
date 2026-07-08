@@ -6,6 +6,12 @@ const ALERT_URL = process.env.ALERT_SERVICE_URL || 'http://localhost:3003';
 // Prosledi očitavanje ka Irrigation Service
 async function forwardToIrrigation(reading) {
   try {
+
+    // ===== DODAJ OVO ZA DEBUG =====
+    console.log('📤 SENSOR: Šaljem ka Irrigation:');
+    console.log('   zone_id:', reading.zone_id);
+    console.log('   moisture:', reading.moisture);
+
     await axios.post(`${IRRIGATION_URL}/api/irrigation/check`, {
       zone_id: reading.zone_id,
       moisture: reading.moisture,
@@ -25,6 +31,12 @@ async function forwardToIrrigation(reading) {
 // Prosledi očitavanje ka Alert Service
 async function forwardToAlert(reading) {
   try {
+
+    // ===== DODAJ OVO ZA DEBUG =====
+    console.log('📤 SENSOR: Šaljem ka Alert:');
+    console.log('   zone_id:', reading.zone_id);
+    console.log('   moisture:', reading.moisture);
+
     await axios.post(`${ALERT_URL}/api/alerts/check`, {
       zone_id: reading.zone_id,
       moisture: reading.moisture,
