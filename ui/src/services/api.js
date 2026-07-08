@@ -143,4 +143,25 @@ export const getWeatherForecast7Days = async (zoneId = 'ZONE_1') => {
   }
 };
 
+// ---------- ZONE (CRUD) ----------
+export const createZone = async (zone) => {
+  try {
+    const response = await api.post('/irrigation/zones', zone);
+    return response.data;
+  } catch (error) {
+    console.error('Greška pri kreiranju zone:', error);
+    throw error;
+  }
+};
+
+export const deleteZone = async (zoneId) => {
+  try {
+    const response = await api.delete(`/irrigation/zones/${zoneId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Greška pri brisanju zone:', error);
+    throw error;
+  }
+};
+
 export default api;

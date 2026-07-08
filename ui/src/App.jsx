@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Rules from './pages/Rules';
 import Alerts from './pages/Alerts';
+import Zones from './pages/Zones';
 import './App.css';
 
 function App() {
@@ -13,12 +14,14 @@ function App() {
           <Link to="/">📊 Dashboard</Link>
           <Link to="/rules">⚙️ Pravila</Link>
           <Link to="/alerts">🔔 Alerti</Link>
+          <Link to="/zones">📍 Zone</Link>
         </nav>
 
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/rules" element={<Rules />} />
           <Route path="/alerts" element={<Alerts />} />
+          <Route path="/zones" element={<Zones />} />
         </Routes>
       </div>
     </Router>

@@ -756,3 +756,85 @@ h1 i {
 ::-webkit-scrollbar-thumb:hover {
   background: #3a4a5a;
 }
+
+/* ===== ZONES ===== */
+.zones {
+  background: #1a232e;
+  padding: 28px 32px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2a3540;
+}
+
+.create-zone {
+  background: #0e1419;
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid #2a3540;
+  margin-bottom: 24px;
+}
+
+.create-zone h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #94a9c4;
+  margin-bottom: 16px;
+}
+
+.create-zone form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.zones-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.zone-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #0e1419;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid #2a3540;
+  transition: border-color 0.2s ease;
+}
+
+.zone-item:hover {
+  border-color: #3a4a5a;
+}
+
+.zone-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: #e2e8f0;
+}
+
+.zone-details {
+  color: #6a7f9a;
+  font-size: 13px;
+}
+
+.zone-location {
+  color: #6a7f9a;
+  font-size: 12px;
+}
+
+/* ===== RESPONZIVNOST ZA ZONES ===== */
+@media (max-width: 768px) {
+  .create-zone form {
+    grid-template-columns: 1fr;
+  }
+
+  .zone-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
