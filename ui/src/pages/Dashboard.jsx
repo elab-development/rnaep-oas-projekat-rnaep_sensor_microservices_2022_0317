@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { getLatestSensorReading, getZones, getWeatherForecast } from '../services/api';
+//import { getLatestSensorReading, getZones, getWeatherForecast } from '../services/api';
+import { getLatestSensorReading, getZones, getWeatherForecast, getWeatherForecast7Days } from '../services/api';
 
 const Dashboard = () => {
   const [sensorData, setSensorData] = useState(null);
@@ -9,6 +10,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedZone, setSelectedZone] = useState('ZONE_1');
   const [simulatorStatus, setSimulatorStatus] = useState('Nepoznat');
+  const [forecast7Days, setForecast7Days] = useState(null);
 
   // ===== FUNKCIJA ZA PROMENU ZONE U SIMULATORU =====
   const changeSimulatorZone = async (zoneId) => {
@@ -55,6 +57,16 @@ const Dashboard = () => {
       } catch (weatherError) {
         console.error('Greška pri dohvatanju vremenske prognoze:', weatherError);
         setWeatherData(null);
+      }
+
+      // 3b. Dohvati višednevnu prognozu (7 dana)
+      try {
+        const forecast7 = await getWeatherForecast7Days(selectedZone);
+        console.log('📅 7-day forecast:', forecast7);
+        setForecast7Days(forecast7);
+      } catch (forecastError) {
+        console.error('Greška pri dohvatanju višednevne prognoze:', forecastError);
+        setForecast7Days(null);
       }
       
     } catch (error) {
@@ -184,6 +196,51 @@ const Dashboard = () => {
               </p>
             )}
           </div>
+
+            {/* 7-day forecast */}
+            <div className="sensor-card" style={{ marginTop: '20px' }}>
+              <h2><i className="fas fa-calendar-alt"></i> 7-dnevna prognoza</h2>
+              {forecast7Days && forecast7Days.forecast && forecast7Days.forecast.days ? (
+                <div className="forecast-grid" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  gap: '12px',
+                  marginTop: '16px'
+                }}>
+                  {forecast7Days.forecast.days.map((day, index) => (
+                    <div key={index} className="forecast-day" style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: '14px', color: '#a0aec0', fontWeight: '500' }}>
+                        {index === 0 ? 'Danas' : new Date(day.date).toLocaleDateString('sr-RS', { weekday: 'short' })}
+                      </div>
+                      <div style={{ fontSize: '32px', margin: '8px 0' }}>{day.weather_icon}</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff' }}>
+                        {day.temperature_max}°
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#a0aec0' }}>
+                        {day.temperature_min}°
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#718096', marginTop: '4px' }}>
+                        💧 {day.precipitation} mm
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#4a5568', marginTop: '2px' }}>
+                        {day.weather_description}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: '#718096' }}>
+                  <i className="fas fa-info-circle"></i> 7-dnevna prognoza nije dostupna.
+                </p>
+              )}
+            </div>
+
         </>
       ) : (
         <p className="no-data">Nema dostupnih podataka za ovu zonu.</p>

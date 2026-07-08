@@ -132,4 +132,15 @@ export const setThreshold = async (threshold) => {
   }
 };
 
+// ---------- WEATHER (7 DAYS) ----------
+export const getWeatherForecast7Days = async (zoneId = 'ZONE_1') => {
+  try {
+    const response = await api.get(`/irrigation/forecast/${zoneId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Greška pri dohvatanju višednevne prognoze:', error);
+    throw error;
+  }
+};
+
 export default api;

@@ -1,6 +1,7 @@
 const { pool } = require('../models/database');
 const { simulateActuator } = require('../services/actuatorService');
-const { getWeatherForecast } = require('../services/weatherClient');
+//const { getWeatherForecast } = require('../services/weatherClient');
+const { getWeatherForecast, getWeatherForecast7Days } = require('../services/weatherClient');
 
 // CRUD za pravila
 exports.createRule = async (req, res) => {
@@ -324,6 +325,38 @@ exports.getWeatherForecast = async (req, res) => {
 
   } catch (error) {
     console.error('❌ IRRIGATION: Greška u getWeatherForecast:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Dohvati višednevnu vremensku prognozu za zonu
+exports.getWeatherForecast7Days = async (req, res) => {
+  try {
+    const { zone_id } = req.params;
+
+    // Dohvati zonu sa koordinatama
+    const zoneResult = await pool.query(
+      `SELECT zone_id, name, latitude, longitude, city FROM zones WHERE zone_id = $1`,
+      [zone_id]
+    );
+
+    if (zoneResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Zona nije pronađena' });
+    }
+
+    const zone = zoneResult.rows[0];
+
+    // Dohvati višednevnu prognozu
+    const forecast = await getWeatherForecast7Days(zone.latitude, zone.longitude, zone.city);
+
+    res.json({
+      zone_id: zone.zone_id,
+      zone_name: zone.name,
+      forecast: forecast
+    });
+
+  } catch (error) {
+    console.error('❌ IRRIGATION: Greška u getWeatherForecast7Days:', error);
     res.status(500).json({ error: error.message });
   }
 };
