@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const SensorReadingSchema = new mongoose.Schema({
   sensor_id: {

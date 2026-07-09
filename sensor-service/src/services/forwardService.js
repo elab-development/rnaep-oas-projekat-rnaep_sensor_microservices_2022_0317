@@ -1,4 +1,5 @@
 const axios = require('axios');
+const crypto = require('crypto');
 
 const IRRIGATION_URL = process.env.IRRIGATION_SERVICE_URL || 'http://localhost:3002';
 const ALERT_URL = process.env.ALERT_SERVICE_URL || 'http://localhost:3003';

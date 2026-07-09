@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const sensorController = require('../controllers/sensorController');
+const crypto = require('crypto');
 
 // POST /api/sensors/measurements - Prijem podataka sa senzora
 router.post('/measurements', sensorController.createReading);

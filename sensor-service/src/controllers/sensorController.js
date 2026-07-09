@@ -1,5 +1,6 @@
 const SensorReading = require('../models/SensorReading');
 const { forwardToIrrigation, forwardToAlert } = require('../services/forwardService');
+const crypto = require('crypto');
 
 // Prijem podataka sa senzora
 exports.createReading = async (req, res) => {
