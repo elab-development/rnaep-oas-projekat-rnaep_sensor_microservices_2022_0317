@@ -7,7 +7,20 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // CORS za sve zahteve
-app.use(cors());
+//app.use(cors());
+
+const cors = require('cors');
+
+// Dozvoli samo sa UI-ja (localhost:5173)
+const corsOptions = {
+  origin: 'http://localhost:5173', // Dozvoli samo React UI
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
 
 // Logovanje svih zahteva
 app.use((req, res, next) => {
