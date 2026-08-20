@@ -8,6 +8,20 @@ exports.createRule = async (req, res) => {
   try {
     const { zone_id, name, moisture_threshold, irrigation_duration_min, use_weather_forecast } = req.body;
 
+    // ===== VALIDACIJA =====
+    if (!zone_id || typeof zone_id !== 'string' || zone_id.length === 0) {
+      return res.status(400).json({ error: 'zone_id je obavezan i mora biti tekst' });
+    }
+    if (!name || typeof name !== 'string' || name.length > 100) {
+      return res.status(400).json({ error: 'name je obavezan i mora imati do 100 karaktera' });
+    }
+    if (typeof moisture_threshold !== 'number' || moisture_threshold < 0 || moisture_threshold > 100) {
+      return res.status(400).json({ error: 'moisture_threshold mora biti broj između 0 i 100' });
+    }
+    if (typeof irrigation_duration_min !== 'number' || irrigation_duration_min < 1) {
+      return res.status(400).json({ error: 'irrigation_duration_min mora biti broj veći od 0' });
+    }
+
     const result = await pool.query(
       `INSERT INTO irrigation_rules 
        (zone_id, name, moisture_threshold, irrigation_duration_min, use_weather_forecast) 
@@ -255,6 +269,20 @@ exports.createZone = async (req, res) => {
       parcel_id, name, sensor_id, valve_id,
       latitude, longitude, city 
     } = req.body;
+
+    // ===== VALIDACIJA =====
+    if (!zone_id || typeof zone_id !== 'string') {
+      return res.status(400).json({ error: 'zone_id je obavezan' });
+    }
+    if (!name || typeof name !== 'string' || name.length > 100) {
+      return res.status(400).json({ error: 'name je obavezan i mora imati do 100 karaktera' });
+    }
+    /*if (!sensor_id || typeof sensor_id !== 'string') {
+      return res.status(400).json({ error: 'sensor_id je obavezan' });
+    }
+    if (!valve_id || typeof valve_id !== 'string') {
+      return res.status(400).json({ error: 'valve_id je obavezan' });
+    }*/
 
     // Ako zone_id nije poslat, generiši ga
     let zone_id = req.body.zone_id;

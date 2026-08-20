@@ -7,6 +7,17 @@ exports.setThreshold = async (req, res) => {
     const { zone_id, critical_moisture, warning_moisture, notification_channels } = req.body;
     console.log(`📝 ALERT: Postavljam prag za zonu "${zone_id}" (critical: ${critical_moisture}%, warning: ${warning_moisture}%)`);
 
+    // ===== VALIDACIJA =====
+    if (!zone_id || typeof zone_id !== 'string') {
+      return res.status(400).json({ error: 'zone_id je obavezan' });
+    }
+    if (typeof critical_moisture !== 'number' || critical_moisture < 0 || critical_moisture > 100) {
+      return res.status(400).json({ error: 'critical_moisture mora biti broj između 0 i 100' });
+    }
+    if (typeof warning_moisture !== 'number' || warning_moisture < 0 || warning_moisture > 100) {
+      return res.status(400).json({ error: 'warning_moisture mora biti broj između 0 i 100' });
+    }
+
     const result = await pool.query(
       `INSERT INTO thresholds (zone_id, critical_moisture, warning_moisture, notification_channels)
        VALUES ($1, $2, $3, $4)
