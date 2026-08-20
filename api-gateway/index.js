@@ -2,6 +2,7 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 require('dotenv').config();
+const sanitize = require('./utils/sanitize');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -21,6 +22,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// === XSS ZAŠTITA - Sanitizacija svih ulaznih podataka ===
+app.use((req, res, next) => {
+  if (req.body) {
+    req.body = sanitize(req.body);
+  }
+  if (req.query) {
+    req.query = sanitize(req.query);
+  }
+  if (req.params) {
+    req.params = sanitize(req.params);
+  }
+  next();
+});
 
 // Logovanje svih zahteva
 app.use((req, res, next) => {
