@@ -33,11 +33,24 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('✅ Povezan na MongoDB');
     
     // Pokreni server tek kada je baza povezana
+    /*app.listen(PORT, () => {
+      console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
+      console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
+      console.log(`💚 Health check: http://localhost:${PORT}/health`);
+    });*/
+
+    if (require.main === module) {
+    // Pokreće se direktno (node src/index.js)
     app.listen(PORT, () => {
       console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
       console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
       console.log(`💚 Health check: http://localhost:${PORT}/health`);
     });
+  } else {
+    // Učitava se kao modul (za testove)
+    module.exports = app;
+  }
+
   })
   .catch((error) => {
     console.error('❌ Greška pri povezivanju na MongoDB:', error);

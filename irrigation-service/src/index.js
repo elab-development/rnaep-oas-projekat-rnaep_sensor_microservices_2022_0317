@@ -28,11 +28,32 @@ const startServer = async () => {
     // Kreiraj tabele
     await createTables();
     
-    app.listen(PORT, () => {
+    /*app.listen(PORT, () => {
       console.log(`🚀 Irrigation Service pokrenut na portu ${PORT}`);
       console.log(`📡 Endpoint: http://localhost:${PORT}/api/irrigation`);
       console.log(`💚 Health check: http://localhost:${PORT}/health`);
-    });
+    });*/
+
+    if (require.main === module) {
+    // Pokreće se direktno
+    const startServer = async () => {
+      try {
+        await createTables();
+        app.listen(PORT, () => {
+          console.log(`🚀 Irrigation Service pokrenut na portu ${PORT}`);
+          console.log(`📡 Endpoint: http://localhost:${PORT}/api/irrigation`);
+          console.log(`💚 Health check: http://localhost:${PORT}/health`);
+        });
+      } catch (error) {
+        console.error('❌ Greška pri pokretanju:', error);
+      }
+    };
+    startServer();
+  } else {
+    // Učitava se kao modul (za testove)
+    module.exports = app;
+  }
+
   } catch (error) {
     console.error('❌ Greška pri pokretanju:', error);
   }
