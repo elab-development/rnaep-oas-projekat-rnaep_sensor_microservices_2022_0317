@@ -1,28 +1,39 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const sanitize = require('./utils/sanitize');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// CORS za sve zahteve
-//app.use(cors());
-
-const cors = require('cors');
-
-// Dozvoli samo sa UI-ja (localhost:5173)
+// === CORS ===
 const corsOptions = {
-  origin: 'http://localhost:5173', // Dozvoli samo React UI
+  origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
-
 app.use(cors(corsOptions));
 
-// === XSS ZAŠTITA - Sanitizacija svih ulaznih podataka ===
+// === CSRF ZAŠTITA (SameSite=Strict) ===
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  const originalSetCookie = res.setHeader.bind(res, 'Set-Cookie');
+  res.setHeader = (name, value, ...args) => {
+    if (name === 'Set-Cookie' && value && typeof value === 'string') {
+      if (!value.includes('SameSite=')) {
+        return originalSetCookie(value + '; SameSite=Strict');
+      }
+    }
+    return originalSetCookie(name, value, ...args);
+  };
+  next();
+});
+
+// === XSS ZAŠTITA ===
 app.use((req, res, next) => {
   if (req.body) {
     req.body = sanitize(req.body);
@@ -42,7 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check za API Gateway
+// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
