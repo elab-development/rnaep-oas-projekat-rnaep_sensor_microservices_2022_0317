@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { initializeProducer } = require('./kafka/producer');
 require('dotenv').config();
 
 // Inicijalizacija express aplikacije
@@ -33,11 +34,28 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('✅ Povezan na MongoDB');
     
     // Pokreni server tek kada je baza povezana
+    /*app.listen(PORT, () => {
+      console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
+      console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
+      console.log(`💚 Health check: http://localhost:${PORT}/health`);
+    });*/
+
+    // === KAFKA ===
+    await initializeProducer();
+    console.log('✅ Kafka Producer inicijalizovan');
+
+    if (require.main === module) {
+    // Pokreće se direktno (node src/index.js)
     app.listen(PORT, () => {
       console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
       console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
       console.log(`💚 Health check: http://localhost:${PORT}/health`);
     });
+  } else {
+    // Učitava se kao modul (za testove)
+    module.exports = app;
+  }
+
   })
   .catch((error) => {
     console.error('❌ Greška pri povezivanju na MongoDB:', error);

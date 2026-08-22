@@ -18,48 +18,43 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
+          # cache: 'npm'  <- UKLONJENO jer nemamo package-lock.json u root-u
 
-      - name: Install dependencies (Sensor Service)
-        run: |
-          cd sensor-service
-          npm install
+      - name: Install dependencies - Sensor Service
+        working-directory: ./sensor-service
+        run: npm install
 
-      - name: Install dependencies (Irrigation Service)
-        run: |
-          cd irrigation-service
-          npm install
+      - name: Install dependencies - Irrigation Service
+        working-directory: ./irrigation-service
+        run: npm install
 
-      - name: Install dependencies (Alert Service)
-        run: |
-          cd alert-service
-          npm install
+      - name: Install dependencies - Alert Service
+        working-directory: ./alert-service
+        run: npm install
 
-      - name: Install dependencies (API Gateway)
-        run: |
-          cd api-gateway
-          npm install
+      - name: Install dependencies - API Gateway
+        working-directory: ./api-gateway
+        run: npm install
 
-      - name: Install dependencies (UI)
-        run: |
-          cd ui
-          npm install
+      - name: Install dependencies - UI
+        working-directory: ./ui
+        run: npm install
 
-      - name: Run tests (Sensor Service)
-        run: |
-          cd sensor-service
-          npm test || echo "No tests found"
+      - name: Install dependencies - Simulator
+        working-directory: ./simulator
+        run: npm install
 
-      - name: Run tests (Irrigation Service)
-        run: |
-          cd irrigation-service
-          npm test || echo "No tests found"
+      - name: Run tests - Sensor Service
+        working-directory: ./sensor-service
+        run: npm test || echo "No tests found"
 
-      - name: Run tests (Alert Service)
-        run: |
-          cd alert-service
-          npm test || echo "No tests found"
+      - name: Run tests - Irrigation Service
+        working-directory: ./irrigation-service
+        run: npm test || echo "No tests found"
 
-      - name: Run lint check (optional)
-        run: |
-          echo "✅ CI pipeline completed successfully!"
+      - name: Run tests - Alert Service
+        working-directory: ./alert-service
+        run: npm test || echo "No tests found"
+
+      - name: Final status
+        run: echo "✅ CI pipeline completed successfully!"
