@@ -63,22 +63,37 @@ app.get('/health', (req, res) => {
 });
 
 // Proxy ka Sensor Service-u
-app.use('/api/sensors', createProxyMiddleware({
+/*app.use('/api/sensors', createProxyMiddleware({
   target: 'http://localhost:3001',
+  changeOrigin: true,
+  logLevel: 'debug'
+}));*/
+app.use('/api/sensors', createProxyMiddleware({
+  target: 'http://sensor-service:3001',
   changeOrigin: true,
   logLevel: 'debug'
 }));
 
 // Proxy ka Irrigation Service-u
-app.use('/api/irrigation', createProxyMiddleware({
+/*app.use('/api/irrigation', createProxyMiddleware({
   target: 'http://localhost:3002',
+  changeOrigin: true,
+  logLevel: 'debug'
+}));*/
+app.use('/api/irrigation', createProxyMiddleware({
+  target: 'http://irrigation-service:3002',
   changeOrigin: true,
   logLevel: 'debug'
 }));
 
 // Proxy ka Alert Service-u
-app.use('/api/alerts', createProxyMiddleware({
+/*app.use('/api/alerts', createProxyMiddleware({
   target: 'http://localhost:3003',
+  changeOrigin: true,
+  logLevel: 'debug'
+}));*/
+app.use('/api/alerts', createProxyMiddleware({
+  target: 'http://alert-service:3003',
   changeOrigin: true,
   logLevel: 'debug'
 }));

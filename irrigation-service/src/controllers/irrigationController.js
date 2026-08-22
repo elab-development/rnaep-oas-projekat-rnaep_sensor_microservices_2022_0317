@@ -270,21 +270,7 @@ exports.createZone = async (req, res) => {
       latitude, longitude, city 
     } = req.body;
 
-    // ===== VALIDACIJA =====
-    if (!zone_id || typeof zone_id !== 'string') {
-      return res.status(400).json({ error: 'zone_id je obavezan' });
-    }
-    if (!name || typeof name !== 'string' || name.length > 100) {
-      return res.status(400).json({ error: 'name je obavezan i mora imati do 100 karaktera' });
-    }
-    /*if (!sensor_id || typeof sensor_id !== 'string') {
-      return res.status(400).json({ error: 'sensor_id je obavezan' });
-    }
-    if (!valve_id || typeof valve_id !== 'string') {
-      return res.status(400).json({ error: 'valve_id je obavezan' });
-    }*/
-
-    // Ako zone_id nije poslat, generiši ga
+    // ===== PRVO DOHVATI ZONE_ID =====
     let zone_id = req.body.zone_id;
     if (!zone_id) {
       const lastZone = await pool.query(
@@ -299,7 +285,14 @@ exports.createZone = async (req, res) => {
       }
     }
 
-    // Default koordinate (Beograd) ako nisu poslate
+    // ===== VALIDACIJA (TEK SADA) =====
+    if (!zone_id || typeof zone_id !== 'string') {
+      return res.status(400).json({ error: 'zone_id je obavezan' });
+    }
+    if (!name || typeof name !== 'string' || name.length > 100) {
+      return res.status(400).json({ error: 'name je obavezan i mora imati do 100 karaktera' });
+    }
+
     const lat = latitude || 44.7866;
     const lon = longitude || 20.4489;
     const cityName = city || 'Belgrade';
