@@ -1,6 +1,7 @@
 const SensorReading = require('../models/SensorReading');
 const { forwardToIrrigation, forwardToAlert } = require('../services/forwardService');
 const crypto = require('crypto');
+const { sendMessage } = require('../kafka/producer');
 
 // Prijem podataka sa senzora
 exports.createReading = async (req, res) => {
@@ -32,6 +33,14 @@ exports.createReading = async (req, res) => {
 
     // Sačuvaj u MongoDB
     await reading.save();
+
+    // === KAFKA ===
+    try {
+      await sendMessage('sensor-data', reading);
+      console.log(`📨 Kafka: Poslata poruka za zonu ${reading.zone_id}`);
+    } catch (error) {
+      console.error('❌ Kafka: Greška pri slanju:', error);
+    }
 
     // ✅ PROSLEDI KA IRRIGATION SERVICE (asinhrono - ne čekamo odgovor)
     forwardToIrrigation(reading).catch(err => {

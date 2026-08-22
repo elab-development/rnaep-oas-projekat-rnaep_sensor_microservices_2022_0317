@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { initializeProducer } = require('./kafka/producer');
 require('dotenv').config();
 
 // Inicijalizacija express aplikacije
@@ -38,6 +39,10 @@ mongoose.connect(process.env.MONGODB_URI)
       console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
       console.log(`💚 Health check: http://localhost:${PORT}/health`);
     });*/
+
+    // === KAFKA ===
+    await initializeProducer();
+    console.log('✅ Kafka Producer inicijalizovan');
 
     if (require.main === module) {
     // Pokreće se direktno (node src/index.js)
