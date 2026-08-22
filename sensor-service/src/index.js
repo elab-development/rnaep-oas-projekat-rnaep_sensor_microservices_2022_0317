@@ -30,7 +30,7 @@ app.get('/health', (req, res) => {
 
 // Konekcija na MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ Povezan na MongoDB');
     
     // Pokreni server tek kada je baza povezana
@@ -41,8 +41,12 @@ mongoose.connect(process.env.MONGODB_URI)
     });*/
 
     // === KAFKA ===
-    await initializeProducer();
-    console.log('✅ Kafka Producer inicijalizovan');
+    try {
+      await initializeProducer();
+      console.log('✅ Kafka Producer inicijalizovan');
+    } catch (error) {
+      console.error('❌ Kafka Producer greška:', error);
+    }
 
     if (require.main === module) {
     // Pokreće se direktno (node src/index.js)
