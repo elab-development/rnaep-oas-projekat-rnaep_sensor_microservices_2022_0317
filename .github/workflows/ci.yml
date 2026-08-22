@@ -10,37 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      # ===== ZOOKEEPER =====
-      zookeeper:
-        image: confluentinc/cp-zookeeper:latest
-        ports:
-          - 2181:2181
-        env:
-          ZOOKEEPER_CLIENT_PORT: 2181
-          ZOOKEEPER_TICK_TIME: 2000
-
-      # ===== KAFKA =====
-      kafka:
-        image: confluentinc/cp-kafka:latest
-        ports:
-          - 9092:9092
-        env:
-          KAFKA_BROKER_ID: 1
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        options: >-
-          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -50,7 +19,6 @@ jobs:
         with:
           node-version: '18'
 
-      # ===== INSTALACIJA ZAVISNOSTI =====
       - name: Install dependencies - Sensor Service
         working-directory: ./sensor-service
         run: npm install
@@ -79,7 +47,6 @@ jobs:
         working-directory: ./simulator
         run: npm install
 
-      # ===== TESTOVI =====
       - name: Run tests - Sensor Service
         working-directory: ./sensor-service
         run: npm test || echo "No tests found"
@@ -92,6 +59,5 @@ jobs:
         working-directory: ./alert-service
         run: npm test || echo "No tests found"
 
-      # ===== ZAVRŠNI STATUS =====
       - name: Final status
         run: echo "✅ CI pipeline completed successfully!"
