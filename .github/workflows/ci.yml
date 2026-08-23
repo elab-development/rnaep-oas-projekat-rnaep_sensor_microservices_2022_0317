@@ -18,7 +18,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          # cache: 'npm'  <- UKLONJENO jer nemamo package-lock.json u root-u
 
       - name: Install dependencies - Sensor Service
         working-directory: ./sensor-service
@@ -34,6 +33,10 @@ jobs:
 
       - name: Install dependencies - API Gateway
         working-directory: ./api-gateway
+        run: npm install
+
+      - name: Install dependencies - Processor Service
+        working-directory: ./processor-service
         run: npm install
 
       - name: Install dependencies - UI
