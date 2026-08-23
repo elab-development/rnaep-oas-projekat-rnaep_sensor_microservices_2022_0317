@@ -1,13 +1,36 @@
 const express = require('express');
 const cors = require('cors');
+const client = require('prom-client'); // <-- DODATO
 require('dotenv').config();
 const { Kafka } = require('kafkajs');
 
 const app = express();
 const PORT = process.env.PORT || 3006;
 
+// === PROMETHEUS METRIKE ===
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status']
+});
+register.registerMetric(httpRequestsTotal);
+
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: req.route ? req.route.path : req.path,
+      status: res.statusCode
+    });
+  });
+  next();
+});
 
 // Kafka konfiguracija
 const kafka = new Kafka({
@@ -27,22 +50,24 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Prometheus metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 // Inicijalizacija
 async function init() {
   try {
-    // Poveži producer
     await producer.connect();
     console.log('✅ Processor: Producer povezan');
     
-    // Poveži consumer
     await consumer.connect();
     console.log('✅ Processor: Consumer povezan');
     
-    // Subscribe na topic
     await consumer.subscribe({ topic: 'sensor-data', fromBeginning: true });
     console.log('✅ Processor: Subscribovan na "sensor-data"');
     
-    // Pokreni consumer
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
@@ -50,11 +75,9 @@ async function init() {
           console.log(`📥 Processor: Primljena poruka sa "sensor-data"`);
           console.log(`   zone_id: ${data.zone_id}, moisture: ${data.moisture}`);
           
-          // POSLOVNA LOGIKA: Ako je vlažnost ispod 40%, pošalji upozorenje
           if (data.moisture < 40) {
             console.log(`⚠️ Processor: Vlažnost ${data.moisture}% je ispod 40%`);
             
-            // Pošalji poruku na drugi topic
             const alertMessage = {
               zone_id: data.zone_id,
               moisture: data.moisture,
@@ -93,6 +116,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Processor Service pokrenut na portu ${PORT}`);
   console.log(`📡 Endpoint: http://localhost:${PORT}/api/processor`);
   console.log(`💚 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Metrics: http://localhost:${PORT}/metrics`);
 });
 
 // Pokreni Kafka

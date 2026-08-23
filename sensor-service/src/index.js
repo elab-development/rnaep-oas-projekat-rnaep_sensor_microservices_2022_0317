@@ -3,15 +3,40 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { initializeProducer } = require('./kafka/producer');
+const client = require('prom-client'); // <-- DODATO
 require('dotenv').config();
 
 // Inicijalizacija express aplikacije
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// === PROMETHEUS METRIKE ===
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+// Brojač HTTP zahteva
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status']
+});
+register.registerMetric(httpRequestsTotal);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Middleware za brojanje zahteva
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: req.route ? req.route.path : req.path,
+      status: res.statusCode
+    });
+  });
+  next();
+});
 
 // Import ruta
 const sensorRoutes = require('./routes/sensorRoutes');
@@ -28,18 +53,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Prometheus metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 // Konekcija na MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
     console.log('✅ Povezan na MongoDB');
     
-    // Pokreni server tek kada je baza povezana
-    /*app.listen(PORT, () => {
-      console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
-      console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
-      console.log(`💚 Health check: http://localhost:${PORT}/health`);
-    });*/
-
     // === KAFKA ===
     try {
       await initializeProducer();
@@ -49,17 +73,15 @@ mongoose.connect(process.env.MONGODB_URI)
     }
 
     if (require.main === module) {
-    // Pokreće se direktno (node src/index.js)
-    app.listen(PORT, () => {
-      console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
-      console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
-      console.log(`💚 Health check: http://localhost:${PORT}/health`);
-    });
-  } else {
-    // Učitava se kao modul (za testove)
-    module.exports = app;
-  }
-
+      app.listen(PORT, () => {
+        console.log(`🚀 Sensor Service pokrenut na portu ${PORT}`);
+        console.log(`📡 Endpoint: http://localhost:${PORT}/api/sensors`);
+        console.log(`💚 Health check: http://localhost:${PORT}/health`);
+        console.log(`📊 Metrics: http://localhost:${PORT}/metrics`);
+      });
+    } else {
+      module.exports = app;
+    }
   })
   .catch((error) => {
     console.error('❌ Greška pri povezivanju na MongoDB:', error);

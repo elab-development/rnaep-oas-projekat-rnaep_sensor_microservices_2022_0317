@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+   - job_name: 'api-gateway'
+     static_configs:
+     - targets: ['api-gateway:8080']
+     scrape_protocols:
+     - PrometheusText1.0.0
+     - PrometheusText0.0.4
+     fallback_scrape_protocol: PrometheusText0.0.4
+     honor_labels: true
+
+   - job_name: 'sensor-service'
+     static_configs:
+      - targets: ['sensor-service:3001']
+
+   - job_name: 'irrigation-service'
+     static_configs:
+      - targets: ['irrigation-service:3002']
+
+   - job_name: 'alert-service'
+     static_configs:
+      - targets: ['alert-service:3003']
+
+   - job_name: 'processor-service'
+     static_configs:
+      - targets: ['processor-service:3006']
